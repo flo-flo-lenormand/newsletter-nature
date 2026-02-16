@@ -1,0 +1,2 @@
+# Pas de dependances externes - le script utilise uniquement
+# la bibliotheque standard Python (imaplib, email, urllib, json, etc.)
