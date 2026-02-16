@@ -138,86 +138,34 @@
             directement dans votre boite mail.</p>
         </div>
 
-        <form id="subscribe-form">
-            <div class="form-group">
-                <input
-                    type="email"
-                    id="email"
-                    placeholder="Votre adresse email"
-                    required
-                    autocomplete="email"
-                >
-            </div>
-            <button type="submit" id="submit-btn">S'abonner</button>
-        </form>
+        <!--
+            FORMULAIRE D'ABONNEMENT BREVO
+            ==============================
+            Remplacer le contenu ci-dessous par le formulaire genere par Brevo.
 
-        <div id="message" class="message"></div>
+            Pour obtenir le formulaire :
+            1. Aller sur https://app.brevo.com
+            2. Menu "Contacts" > "Formulaires"
+            3. Creer un formulaire d'abonnement
+            4. Personnaliser le formulaire (champ email uniquement)
+            5. Copier le code HTML genere par Brevo
+            6. Le coller ici a la place de ce commentaire
+
+            Le formulaire Brevo gere automatiquement :
+            - L'ajout du contact a la liste
+            - La confirmation par email (double opt-in)
+            - La protection anti-spam
+            - Pas besoin de cle API cote client
+        -->
+        <div id="brevo-form-placeholder" style="padding: 20px; background: #f9f9f9; border-radius: 8px; border: 2px dashed #d4ddd4;">
+            <p style="color: #6b7c6b; font-style: italic;">
+                Le formulaire d'inscription sera disponible prochainement.
+            </p>
+        </div>
 
         <p class="footer">
             Vous pourrez vous desabonner a tout moment via le lien present dans chaque email.
         </p>
     </div>
-
-    <script>
-        // IMPORTANT: Remplacer par votre cle API Brevo et l'ID de la liste
-        // Pour la cle API cote client, utiliser une cle avec permissions limitees
-        // (uniquement ajout de contacts)
-        const BREVO_API_KEY = 'VOTRE_CLE_API_BREVO';
-        const BREVO_LIST_ID = 1; // Remplacer par l'ID de votre liste
-
-        const form = document.getElementById('subscribe-form');
-        const emailInput = document.getElementById('email');
-        const submitBtn = document.getElementById('submit-btn');
-        const messageDiv = document.getElementById('message');
-
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const emailValue = emailInput.value.trim();
-            if (!emailValue) return;
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Inscription en cours...';
-            messageDiv.className = 'message';
-            messageDiv.style.display = 'none';
-
-            try {
-                const response = await fetch('https://api.brevo.com/v3/contacts', {
-                    method: 'POST',
-                    headers: {
-                        'api-key': BREVO_API_KEY,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: emailValue,
-                        listIds: [BREVO_LIST_ID],
-                        updateEnabled: true,
-                    }),
-                });
-
-                if (response.ok || response.status === 201 || response.status === 204) {
-                    messageDiv.className = 'message success';
-                    messageDiv.textContent = 'Merci ! Vous etes inscrit(e) a la newsletter. Vous recevrez un email de confirmation.';
-                    emailInput.value = '';
-                } else {
-                    const data = await response.json();
-                    if (data.code === 'duplicate_parameter') {
-                        messageDiv.className = 'message success';
-                        messageDiv.textContent = 'Cette adresse est deja inscrite. Vous recevez deja la newsletter !';
-                    } else {
-                        throw new Error(data.message || 'Erreur inconnue');
-                    }
-                }
-            } catch (err) {
-                messageDiv.className = 'message error';
-                messageDiv.textContent = "Une erreur s'est produite. Veuillez reessayer plus tard.";
-                console.error('Erreur:', err);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "S'abonner";
-            }
-        });
-    </script>
 </body>
 </html>
