@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instant Nature — Inscription</title>
+    <link rel="stylesheet" href="https://sibforms.com/forms/end-form/build/sib-styles.css">
     <style>
         * {
             margin: 0;
@@ -45,75 +46,12 @@
             font-style: italic;
         }
 
-        .description {
+        .page-description {
             font-size: 0.95em;
             line-height: 1.6;
             color: #4a5a4a;
             margin-bottom: 32px;
             text-align: left;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        #EMAIL {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 1em;
-            font-family: Georgia, 'Times New Roman', serif;
-            border: 2px solid #d4ddd4;
-            border-radius: 8px;
-            outline: none;
-            transition: border-color 0.2s;
-            box-sizing: border-box;
-        }
-
-        #EMAIL:focus {
-            border-color: #2c5f2d;
-        }
-
-        #EMAIL::placeholder {
-            color: #a0b0a0;
-        }
-
-        button[type="submit"] {
-            width: 100%;
-            padding: 14px;
-            font-size: 1.05em;
-            font-family: Georgia, 'Times New Roman', serif;
-            background-color: #2c5f2d;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #1e4620;
-        }
-
-        .message {
-            margin-top: 16px;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.95em;
-            display: none;
-        }
-
-        .message.success {
-            display: block;
-            background-color: #e8f5e9;
-            color: #2c5f2d;
-            border: 1px solid #a5d6a7;
-        }
-
-        .message.error {
-            display: block;
-            background-color: #fce4ec;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
         }
 
         .footer {
@@ -125,6 +63,87 @@
         .input--hidden {
             display: none;
         }
+
+        /* Override Brevo styles to match our design */
+        .sib-form {
+            background-color: transparent !important;
+            padding: 0 !important;
+        }
+
+        #sib-container {
+            background-color: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            font-family: Georgia, 'Times New Roman', serif !important;
+        }
+
+        #sib-container input.input {
+            width: 100% !important;
+            padding: 14px 16px !important;
+            font-size: 1em !important;
+            font-family: Georgia, 'Times New Roman', serif !important;
+            border: 2px solid #d4ddd4 !important;
+            border-radius: 8px !important;
+            outline: none !important;
+            box-sizing: border-box !important;
+        }
+
+        #sib-container input.input:focus {
+            border-color: #2c5f2d !important;
+        }
+
+        #sib-container input.input::placeholder {
+            color: #a0b0a0 !important;
+        }
+
+        .sib-form-block__button {
+            width: 100% !important;
+            padding: 14px !important;
+            font-size: 1.05em !important;
+            font-family: Georgia, 'Times New Roman', serif !important;
+            background-color: #2c5f2d !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+        }
+
+        .sib-form-block__button:hover {
+            background-color: #1e4620 !important;
+        }
+
+        /* Hide Brevo title and description (we have our own) */
+        #sib-container .sib-form-block[style*="font-size:32px"],
+        #sib-container .sib-form-block .sib-text-form-block {
+            display: none !important;
+        }
+
+        /* Style Brevo label */
+        .entry__label {
+            display: none !important;
+        }
+
+        .entry__specification {
+            display: none !important;
+        }
+
+        /* Style Brevo messages */
+        #error-message, #success-message {
+            border-radius: 8px !important;
+            margin-bottom: 16px !important;
+        }
+
+        #success-message {
+            background-color: #e8f5e9 !important;
+            color: #2c5f2d !important;
+            border-color: #a5d6a7 !important;
+        }
+
+        #error-message {
+            background-color: #fce4ec !important;
+            color: #c62828 !important;
+            border-color: #ef9a9a !important;
+        }
     </style>
 </head>
 <body>
@@ -132,22 +151,66 @@
         <h1>Instant Nature</h1>
         <p class="subtitle">Chaque semaine, un regard sur la nature qui nous entoure</p>
 
-        <div class="description">
+        <div class="page-description">
             <p>Recevez chaque semaine un court texte pour decouvrir les merveilles de la nature :
             fleurs, oiseaux, insectes, arbres... Un rendez-vous simple et educatif,
             directement dans votre boite mail.</p>
         </div>
 
-        <form id="sib-form" method="POST" action="https://e0b86fb8.sibforms.com/serve/MUIFAI-qHp26jM_XDp8An1zPXanaUrRZxBK1rizKGJubNyt8jkaBlr0Tm5L3DaN2MxAo0Nrv8JDRf4NeFCYuScyg46cmBBf05dC6GFgvw8AK-K5-0bBPEKlFA7LsHNN4nwjtNHTxSzZa2WzIuboTUJ9wDvnkehm2QYGkv5QfStIlfooa0lNHsWcG4JF6xSubXTb4RZburBYDxmci5w==" data-type="subscription">
-            <div class="form-group">
-                <input type="text" id="EMAIL" name="EMAIL" autocomplete="email" placeholder="Votre adresse email" data-required="true" required>
+        <div class="sib-form" style="text-align: center;">
+            <div id="sib-form-container" class="sib-form-container">
+                <div id="error-message" class="sib-form-message-panel" style="font-size:16px; text-align:left; font-family:Georgia, serif; color:#c62828; background-color:#fce4ec; border-radius:8px; border-color:#ef9a9a; max-width:540px;">
+                    <div class="sib-form-message-panel__text sib-form-message-panel__text--center">
+                        <svg viewBox="0 0 512 512" class="sib-icon sib-notification__icon">
+                            <path d="M256 40c118.621 0 216 96.075 216 216 0 119.291-96.61 216-216 216-119.244 0-216-96.562-216-216 0-119.203 96.602-216 216-216m0-32C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm-11.49 120h22.979c6.823 0 12.274 5.682 11.99 12.5l-7 168c-.268 6.428-5.556 11.5-11.99 11.5h-8.979c-6.433 0-11.722-5.073-11.99-11.5l-7-168c-.283-6.818 5.167-12.5 11.99-12.5zM256 340c-15.464 0-28 12.536-28 28s12.536 28 28 28 28-12.536 28-28-12.536-28-28-28z" />
+                        </svg>
+                        <span class="sib-form-message-panel__inner-text">
+                            Nous n'avons pas pu confirmer votre inscription.
+                        </span>
+                    </div>
+                </div>
+                <div></div>
+                <div id="success-message" class="sib-form-message-panel" style="font-size:16px; text-align:left; font-family:Georgia, serif; color:#2c5f2d; background-color:#e8f5e9; border-radius:8px; border-color:#a5d6a7; max-width:540px;">
+                    <div class="sib-form-message-panel__text sib-form-message-panel__text--center">
+                        <svg viewBox="0 0 512 512" class="sib-icon sib-notification__icon">
+                            <path d="M256 8C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 464c-118.664 0-216-96.055-216-216 0-118.663 96.055-216 216-216 118.664 0 216 96.055 216 216 0 118.663-96.055 216-216 216zm141.63-274.961L217.15 376.071c-4.705 4.667-12.303 4.637-16.97-.068l-85.878-86.572c-4.667-4.705-4.637-12.303.068-16.97l8.52-8.451c4.705-4.667 12.303-4.637 16.97.068l68.976 69.533 163.441-162.13c4.705-4.667 12.303-4.637 16.97.068l8.451 8.52c4.668 4.705 4.637 12.303-.068 16.97z" />
+                        </svg>
+                        <span class="sib-form-message-panel__inner-text">
+                            Votre inscription est confirmee.
+                        </span>
+                    </div>
+                </div>
+                <div></div>
+                <div id="sib-container" class="sib-container--large sib-container--vertical" style="text-align:center; background-color:transparent; max-width:540px; border:none; direction:ltr">
+                    <form id="sib-form" method="POST" action="https://e0b86fb8.sibforms.com/serve/MUIFAI-qHp26jM_XDp8An1zPXanaUrRZxBK1rizKGJubNyt8jkaBlr0Tm5L3DaN2MxAo0Nrv8JDRf4NeFCYuScyg46cmBBf05dC6GFgvw8AK-K5-0bBPEKlFA7LsHNN4nwjtNHTxSzZa2WzIuboTUJ9wDvnkehm2QYGkv5QfStIlfooa0lNHsWcG4JF6xSubXTb4RZburBYDxmci5w==" data-type="subscription">
+                        <div style="padding: 8px 0;">
+                            <div class="sib-input sib-form-block">
+                                <div class="form__entry entry_block">
+                                    <div class="form__label-row">
+                                        <div class="entry__field">
+                                            <input class="input" type="text" id="EMAIL" name="EMAIL" autocomplete="off" placeholder="Votre adresse email" data-required="true" required />
+                                        </div>
+                                    </div>
+                                    <label class="entry__error entry__error--primary" style="font-size:14px; text-align:left; font-family:Georgia, serif; color:#c62828; background-color:#fce4ec; border-radius:8px; border-color:#ef9a9a;"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 8px 0;">
+                            <div class="sib-form-block" style="text-align: left">
+                                <button class="sib-form-block__button sib-form-block__button-with-loader" style="font-size:16px; text-align:center; font-weight:700; font-family:Georgia, serif; color:#FFFFFF; background-color:#2c5f2d; border-radius:8px; border-width:0px;" form="sib-form" type="submit">
+                                    <svg class="icon clickable__icon progress-indicator__icon sib-hide-loader-icon" viewBox="0 0 512 512">
+                                        <path d="M460.116 373.846l-20.823-12.022c-5.541-3.199-7.54-10.159-4.663-15.874 30.137-59.886 28.343-131.652-5.386-189.946-33.641-58.394-94.896-95.833-161.827-99.676C261.028 55.961 256 50.751 256 44.352V20.309c0-6.904 5.808-12.337 12.703-11.982 83.556 4.306 160.163 50.864 202.11 123.677 42.063 72.696 44.079 162.316 6.031 236.832-3.14 6.148-10.75 8.461-16.728 5.01z" />
+                                    </svg>
+                                    S'inscrire
+                                </button>
+                            </div>
+                        </div>
+                        <input type="text" name="email_address_check" value="" class="input--hidden">
+                        <input type="hidden" name="locale" value="fr">
+                    </form>
+                </div>
             </div>
-            <button type="submit">S'inscrire</button>
-            <input type="text" name="email_address_check" value="" class="input--hidden">
-            <input type="hidden" name="locale" value="fr">
-        </form>
-
-        <div id="message" class="message"></div>
+        </div>
 
         <p class="footer">
             Vous pourrez vous desabonner a tout moment via le lien present dans chaque email.
@@ -160,6 +223,14 @@
         window.EMAIL_INVALID_MESSAGE = window.SMS_INVALID_MESSAGE = "L'adresse email n'est pas valide. Veuillez reessayer.";
         window.REQUIRED_ERROR_MESSAGE = "Vous devez renseigner ce champ.";
         window.GENERIC_INVALID_MESSAGE = "L'adresse email n'est pas valide. Veuillez reessayer.";
+        window.translation = {
+            common: {
+                selectedList: '{quantity} liste selectionnee',
+                selectedLists: '{quantity} listes selectionnees',
+                selectedOption: '{quantity} selectionne',
+                selectedOptions: '{quantity} selectionnes',
+            }
+        };
         var AUTOHIDE = Boolean(0);
     </script>
     <script defer src="https://sibforms.com/forms/end-form/build/main.js"></script>
