@@ -15,6 +15,8 @@ Variables d'environnement requises:
     SENDER_EMAIL        - Adresse email du pere (filtre les mails entrants)
     BREVO_LIST_ID       - ID de la liste de contacts Brevo
     SENDER_NAME         - Nom de l'expediteur affiche dans les newsletters
+    GITHUB_TOKEN        - Token GitHub pour heberger les images (fourni automatiquement par Actions)
+    GITHUB_REPOSITORY   - Nom du repo (fourni automatiquement par Actions)
 """
 
 import imaplib
@@ -22,10 +24,12 @@ import email
 from email.header import decode_header
 from email.utils import parseaddr
 import base64
+import hashlib
 import json
 import logging
 import os
-import sys
+import re
+import time
 import urllib.request
 import urllib.error
 
@@ -41,6 +45,39 @@ BREVO_API_KEY = os.environ["BREVO_API_KEY"]
 SENDER_EMAIL = os.environ["SENDER_EMAIL"]
 BREVO_LIST_ID = int(os.environ.get("BREVO_LIST_ID", "1"))
 SENDER_NAME = os.environ.get("SENDER_NAME", "Newsletter Nature")
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY", "")
+
+
+EMAIL_TEMPLATE = """\
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{subject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f5f0e8; font-family: Georgia, 'Times New Roman', serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f0e8;">
+<tr><td align="center" style="padding: 20px 10px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden;">
+<!-- Header -->
+<tr><td style="background-color: #2c5f2d; padding: 24px 32px; text-align: center;">
+<h1 style="margin: 0; color: #ffffff; font-size: 24px; font-family: Georgia, serif;">Instant Nature</h1>
+</td></tr>
+<!-- Content -->
+<tr><td style="padding: 32px; font-size: 16px; line-height: 1.7; color: #2c3e2d; font-family: Georgia, 'Times New Roman', serif;">
+{content}
+</td></tr>
+<!-- Footer -->
+<tr><td style="padding: 16px 32px; text-align: center; font-size: 12px; color: #a0b0a0; border-top: 1px solid #e8e8e8;">
+<p style="margin: 0;">Vous recevez cet email car vous etes abonne(e) a Instant Nature.</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
 
 
 def connect_gmail():
@@ -80,6 +117,72 @@ def find_unread_from_sender(mail):
     return msg_ids
 
 
+def upload_image_to_github(image_data, filename, content_type):
+    """Upload une image sur le repo GitHub et retourne l'URL publique."""
+    if not GITHUB_TOKEN or not GITHUB_REPOSITORY:
+        log.warning("GITHUB_TOKEN ou GITHUB_REPOSITORY manquant, impossible d'heberger l'image.")
+        return None
+
+    # Creer un nom de fichier unique base sur le hash du contenu
+    content_hash = hashlib.sha256(image_data).hexdigest()[:12]
+    timestamp = int(time.time())
+    safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+    path = f"images/{timestamp}_{content_hash}_{safe_filename}"
+
+    b64_content = base64.b64encode(image_data).decode("ascii")
+
+    payload = {
+        "message": f"Add newsletter image: {safe_filename}",
+        "content": b64_content,
+        "branch": "main",
+    }
+
+    url = f"https://api.github.com/repos/{GITHUB_REPOSITORY}/contents/{path}"
+
+    try:
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {GITHUB_TOKEN}",
+                "Content-Type": "application/json",
+                "Accept": "application/vnd.github.v3+json",
+            },
+            method="PUT",
+        )
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            raw_url = f"https://raw.githubusercontent.com/{GITHUB_REPOSITORY}/main/{path}"
+            log.info("Image uploadee: %s -> %s", safe_filename, raw_url)
+            return raw_url
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        log.error("Erreur upload image GitHub: %s — %s", e.code, body)
+        return None
+
+
+def normalize_images_in_html(html_body):
+    """Ajoute des styles responsive a toutes les balises <img>."""
+    def add_responsive_style(match):
+        tag = match.group(0)
+        # Retirer les attributs width/height existants
+        tag = re.sub(r'\s+width\s*=\s*["\']?\d+["\']?', '', tag, flags=re.IGNORECASE)
+        tag = re.sub(r'\s+height\s*=\s*["\']?\d+["\']?', '', tag, flags=re.IGNORECASE)
+        # Ajouter le style responsive
+        if 'style=' in tag:
+            tag = re.sub(
+                r'style\s*=\s*["\']',
+                'style="max-width: 100%; height: auto; display: block; margin: 12px auto; ',
+                tag,
+                flags=re.IGNORECASE,
+            )
+        else:
+            tag = tag.replace('<img', '<img style="max-width: 100%; height: auto; display: block; margin: 12px auto;"', 1)
+        return tag
+
+    return re.sub(r'<img[^>]+>', add_responsive_style, html_body, flags=re.IGNORECASE)
+
+
 def extract_email_content(mail, msg_id):
     """Extrait le sujet, le corps HTML et les images d'un email."""
     status, data = mail.fetch(msg_id, "(RFC822)")
@@ -116,11 +219,11 @@ def extract_email_content(mail, msg_id):
             content_id = content_id.strip("<>")
             image_data = part.get_payload(decode=True)
             if image_data:
-                b64_data = base64.b64encode(image_data).decode("ascii")
+                filename = part.get_filename() or f"image.{content_type.split('/')[1]}"
                 inline_images[content_id] = {
                     "content_type": content_type,
-                    "data": b64_data,
-                    "filename": part.get_filename() or f"image.{content_type.split('/')[1]}",
+                    "data": image_data,
+                    "filename": filename,
                 }
 
     # Si pas de HTML, convertir le texte brut en HTML simple
@@ -133,11 +236,26 @@ def extract_email_content(mail, msg_id):
         log.warning("Aucun contenu exploitable dans l'email.")
         return None
 
-    # Remplacer les references cid: par des images base64 inline
+    # Upload les images sur GitHub et remplacer les references cid:
     for cid, img_info in inline_images.items():
-        cid_ref = f"cid:{cid}"
-        data_uri = f"data:{img_info['content_type']};base64,{img_info['data']}"
-        html_body = html_body.replace(cid_ref, data_uri)
+        hosted_url = upload_image_to_github(
+            img_info["data"], img_info["filename"], img_info["content_type"]
+        )
+        if hosted_url:
+            cid_ref = f"cid:{cid}"
+            html_body = html_body.replace(cid_ref, hosted_url)
+        else:
+            # Fallback: base64 data URI (ne marchera pas sur Gmail)
+            b64_data = base64.b64encode(img_info["data"]).decode("ascii")
+            cid_ref = f"cid:{cid}"
+            data_uri = f"data:{img_info['content_type']};base64,{b64_data}"
+            html_body = html_body.replace(cid_ref, data_uri)
+
+    # Normaliser les images pour le responsive
+    html_body = normalize_images_in_html(html_body)
+
+    # Envelopper dans le template responsive
+    html_body = EMAIL_TEMPLATE.format(subject=subject, content=html_body)
 
     return {
         "subject": subject,
@@ -150,8 +268,6 @@ def send_via_brevo(subject, html_body):
     """Envoie la newsletter a toute la liste via l'API Brevo."""
     log.info("Envoi de la newsletter via Brevo...")
 
-    # Utiliser l'API transactionnelle pour envoyer a toute la liste
-    # D'abord, recuperer les contacts de la liste
     contacts = get_brevo_contacts()
     if not contacts:
         log.warning("Aucun contact dans la liste Brevo. Envoi annule.")
@@ -159,7 +275,6 @@ def send_via_brevo(subject, html_body):
 
     log.info("Envoi a %d contact(s)...", len(contacts))
 
-    # Envoyer par lots de 50 (limite Brevo API transactionnel)
     batch_size = 50
     success = True
 
